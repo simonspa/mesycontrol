@@ -25,6 +25,9 @@ class MessageFactory
     static MessagePtr make_read_response(boost::uint8_t bus, boost::uint8_t dev,
         boost::uint8_t par, boost::int32_t val, bool mirror=false);
 
+    static MessagePtr make_set_request(boost::uint8_t bus, boost::uint8_t dev,
+        boost::uint8_t par, boost::int32_t val, bool mirror=false);
+
     static MessagePtr make_set_response(boost::uint8_t bus, boost::uint8_t dev,
         boost::uint8_t par, boost::int32_t val, boost::int32_t requested_value,
         bool mirror=false);
