@@ -3,7 +3,7 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.30)
 endif()
 
 set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_LIBS   ON)
+set(Boost_USE_STATIC_LIBS   OFF)
 find_package(Boost 1.67 REQUIRED COMPONENTS chrono program_options system date_time log log_setup log regex thread)
 find_package(Threads REQUIRED)
 
@@ -17,29 +17,40 @@ set(PROTO_SRCS "${CMAKE_CURRENT_BINARY_DIR}/mesycontrol.pb.cpp")
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${MESYCONTROL_PROTO_IN})
 message("PROTO_SRCS=${PROTO_SRCS}")
 
-add_executable(mesycontrol_server
+add_library(mesycontrol SHARED)
+target_sources(mesycontrol PRIVATE
     logging.cc
-    main.cc
     mrc_comm.cc
     mrc1_connection.cc
     mrc1_reply_parser.cc
     mrc1_request_queue.cc
     poller.cc
     protocol.cc
+    ${PROTO_SRCS}
+    ${PROTO_HDRS}
     tcp_connection.cc
     tcp_connection.cc
     tcp_connection_manager.cc
     tcp_server.cc
     ${MESYCONTROL_GLOBAL_SOURCES}
-    ${PROTO_SRCS}
-    ${PROTO_HDRS}
+)
+
+target_link_libraries(mesycontrol
+    PUBLIC Boost::disable_autolinking
+    PUBLIC ${Boost_LIBRARIES}
+    PUBLIC Threads::Threads
+    PUBLIC protobuf::libprotobuf
+    )
+
+target_compile_definitions(mesycontrol PRIVATE -DBOOST_BIND_GLOBAL_PLACEHOLDERS)
+target_compile_features(mesycontrol PRIVATE cxx_std_14)
+
+add_executable(mesycontrol_server
+    main.cc
     )
 
 target_link_libraries(mesycontrol_server
-    PRIVATE Boost::disable_autolinking
-    PRIVATE ${Boost_LIBRARIES}
-    PRIVATE Threads::Threads
-    PRIVATE protobuf::libprotobuf
+    PRIVATE mesycontrol
     )
 
 target_compile_definitions(mesycontrol_server PRIVATE -DBOOST_BIND_GLOBAL_PLACEHOLDERS)
@@ -71,7 +82,14 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SYSTEM_PROCESSOR STREQUAL "armv
     target_link_libraries(mesycontrol_server PRIVATE atomic)
 endif()
 
+install(TARGETS mesycontrol RUNTIME DESTINATION lib)
 install(TARGETS mesycontrol_server RUNTIME DESTINATION bin)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    DESTINATION include
+    FILES_MATCHING
+    PATTERN "*.h")
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mesycontrol.pb.h" DESTINATION include)
+
 if (NOT WIN32)
     # Invoke a script to install additional shared library dependencies.
     install(SCRIPT install_server_deps.cmake)

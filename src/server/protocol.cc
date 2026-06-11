@@ -81,6 +81,18 @@ MessagePtr MessageFactory::make_read_response(boost::uint8_t bus, boost::uint8_t
   return ret;
 }
 
+MessagePtr MessageFactory::make_set_request(boost::uint8_t bus, boost::uint8_t dev,
+    boost::uint8_t par, boost::int32_t val, bool mirror)
+{
+  MessagePtr ret(make_message(proto::Message::REQ_SET));
+  ret->mutable_request_set()->set_bus(bus);
+  ret->mutable_request_set()->set_dev(dev);
+  ret->mutable_request_set()->set_par(par);
+  ret->mutable_request_set()->set_val(val);
+  ret->mutable_request_set()->set_mirror(mirror);
+  return ret;
+}
+
 MessagePtr MessageFactory::make_set_response(boost::uint8_t bus, boost::uint8_t dev,
     boost::uint8_t par, boost::int32_t val, boost::int32_t requested_value, bool mirror)
 {
