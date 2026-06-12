@@ -1,0 +1,36 @@
+# syntax=docker/dockerfile:1.5
+# vim:ft=dockerfile
+
+# Dockerfile for building mesycontrol_server under fedora-44.
+# Only the server component is built for now, not the pyqt gui client!
+
+# Usage: docker build  -f ./Dockerfile.fedora-44 . --progress plain
+
+
+
+# build
+FROM fedora:44 as build
+ENV TZ="Etc/UTC"
+
+RUN dnf -y install gcc-c++ cmake ninja-build boost-devel protobuf-devel
+COPY . /mesycontrol-source
+WORKDIR /mesycontrol-build
+RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/mesycontrol \
+    -DMESYCONTROL_BUILD_CLIENT=OFF -DMESYCONTROL_BUILD_DOCS=OFF /mesycontrol-source
+RUN cmake --build . -j && cmake --install .
+
+# smoke test
+FROM fedora:44 as final
+ENV TZ="Etc/UTC"
+
+RUN dnf -y install libicu
+COPY --from=build /mesycontrol /mesycontrol
+
+## try to start the server
+ENV PATH="/mesycontrol/bin:$PATH"
+RUN ldd /mesycontrol/bin/mesycontrol_server
+RUN mesycontrol_server --help
+
+# Default entrypoint is the server binary.
+WORKDIR /mesycontrol
+ENTRYPOINT ["/mesycontrol/bin/mesycontrol_server"]
