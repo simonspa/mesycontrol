@@ -12,12 +12,11 @@ find_package(Protobuf REQUIRED)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-set(PROTO_HDRS "${CMAKE_CURRENT_BINARY_DIR}/mesycontrol.pb.h")
-set(PROTO_SRCS "${CMAKE_CURRENT_BINARY_DIR}/mesycontrol.pb.cpp")
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${MESYCONTROL_PROTO_IN})
-message("PROTO_SRCS=${PROTO_SRCS}")
+add_custom_target(mesycontrol_proto DEPENDS ${PROTO_HDRS} ${PROTO_SRCS})
 
 add_library(mesycontrol SHARED)
+add_dependencies(mesycontrol mesycontrol_proto)
 target_sources(mesycontrol PRIVATE
     logging.cc
     mrc_comm.cc
@@ -33,6 +32,10 @@ target_sources(mesycontrol PRIVATE
     tcp_connection_manager.cc
     tcp_server.cc
     ${MESYCONTROL_GLOBAL_SOURCES}
+)
+# Expose the dir with generated mesycontrol.pb.h
+target_include_directories(mesycontrol PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )
 
 target_link_libraries(mesycontrol
