@@ -4,7 +4,7 @@ endif()
 
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_LIBS   OFF)
-find_package(Boost 1.67 REQUIRED COMPONENTS chrono program_options system date_time log log_setup log regex thread)
+find_package(Boost 1.87 REQUIRED COMPONENTS chrono program_options date_time log log_setup regex thread)
 find_package(Threads REQUIRED)
 
 include(FindProtobuf)
