@@ -12,7 +12,7 @@
 FROM fedora:44 as build
 ENV TZ="Etc/UTC"
 
-RUN dnf -y install gcc-c++ cmake ninja-build boost-devel protobuf-devel
+RUN dnf -y install gcc-c++ cmake ninja-build boost-devel protobuf-devel git gdb
 COPY . /mesycontrol-source
 WORKDIR /mesycontrol-build
 RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/mesycontrol \
@@ -20,17 +20,18 @@ RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/mesycontrol \
 RUN cmake --build . -j && cmake --install .
 
 # smoke test
-FROM fedora:44 as final
-ENV TZ="Etc/UTC"
-
-RUN dnf -y install libicu
-COPY --from=build /mesycontrol /mesycontrol
-
-## try to start the server
-ENV PATH="/mesycontrol/bin:$PATH"
-RUN ldd /mesycontrol/bin/mesycontrol_server
-RUN mesycontrol_server --help
-
-# Default entrypoint is the server binary.
-WORKDIR /mesycontrol
-ENTRYPOINT ["/mesycontrol/bin/mesycontrol_server"]
+#FROM fedora:44 as final
+#ENV TZ="Etc/UTC"
+#
+#RUN dnf -y install libicu
+#COPY --from=build /mesycontrol /mesycontrol
+#
+### try to start the server
+#ENV PATH="/mesycontrol/bin:$PATH"
+#RUN ldd /mesycontrol/bin/mesycontrol_server
+#RUN mesycontrol_server --help
+#
+## Default entrypoint is the server binary.
+#WORKDIR /mesycontrol
+#ENTRYPOINT ["/mesycontrol/bin/mesycontrol_server"]
+#

@@ -1,0 +1,20 @@
+{
+    "name": "Dockerfile (fedora-44)",
+    "build": {
+        "dockerfile": "../Dockerfile.fedora-44",
+        "context": ".."
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "akiramiyakoda.cppincludeguard",
+                "ms-vscode.cmake-tools",
+                "ms-vscode.cpp-devtools",
+                "ms-vscode.cpptools",
+                "ms-vscode.cpptools-extension-pack",
+                "ms-vscode.makefile-tools",
+                "twxs.cmake",
+                "vscodevim.vim",
+            ]
+        }
+    }
