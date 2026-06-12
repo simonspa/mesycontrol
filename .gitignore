@@ -8,3 +8,4 @@ src/client/mesycontrol/mesycontrol_pb2.py
 src/client/mesycontrol_server
 .eggs
 src/client/mesycontrol.egg-info/
+__pycache__/
