@@ -56,7 +56,7 @@ void MRC1RequestQueue::try_send_mrc1_request()
   if (!m_mrc1_connection->is_running()) {
     if (m_mrc1_connection->get_status() == proto::MRCStatus::INITIALIZING) {
       BOOST_LOG_SEV(m_log, log::lvl::debug) << "MRC still initializing. Retrying later";
-      m_retry_timer.expires_from_now(get_retry_timeout());
+      m_retry_timer.expires_after(get_retry_timeout());
       m_retry_timer.async_wait(boost::bind(&MRC1RequestQueue::handle_retry_timer, this, _1));
       return;
     }

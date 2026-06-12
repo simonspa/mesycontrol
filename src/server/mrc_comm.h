@@ -2,6 +2,7 @@
 #define UUID_520d7afb_0f07_4e30_b766_561a3671ca6f
 
 #include <boost/asio.hpp>
+#include <boost/asio/deadline_timer.hpp>
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/enable_shared_from_this.hpp>

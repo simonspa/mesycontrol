@@ -6,7 +6,7 @@ namespace mesycontrol
 {
 
 TCPServer::TCPServer(
-    boost::asio::io_service &io_service,
+    boost::asio::io_context &io_service,
     boost::asio::ip::tcp::endpoint endpoint,
     TCPConnectionManager &connection_manager)
   : m_io_service(io_service)

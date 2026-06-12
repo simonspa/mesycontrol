@@ -14,7 +14,7 @@ namespace asio = boost::asio;
 namespace mesycontrol
 {
 
-TCPConnection::TCPConnection(boost::asio::io_service &io_service, TCPConnectionManager &manager)
+TCPConnection::TCPConnection(boost::asio::io_context &io_service, TCPConnectionManager &manager)
   : m_socket(io_service)
   , m_connection_manager(manager)
   , m_read_size(0)

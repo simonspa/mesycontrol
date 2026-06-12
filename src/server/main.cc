@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
     return exit_options_error;
   }
 
-  boost::asio::io_service io_service;
+  boost::asio::io_context io_service;
   boost::shared_ptr<MRC1Connection> mrc1_connection;
 
   if (option_map.count("mrc-serial-port")) {
@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
     namespace ip = boost::asio::ip;
 
     ip::tcp::endpoint listen_endpoint(
-        ip::address::from_string(option_map["listen-address"].as<std::string>()),
+        ip::make_address_v4(option_map["listen-address"].as<std::string>()),
         option_map["listen-port"].as<unsigned short>());
 
     tcp_server = boost::make_shared<TCPServer>(

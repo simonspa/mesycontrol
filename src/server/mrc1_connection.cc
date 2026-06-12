@@ -249,7 +249,7 @@ bool MRC1Connection::write_command(const MessagePtr &command,
   }
 
   if (is_silenced()) {
-    m_io_context.post(boost::bind(response_handler, command,
+    asio::post(m_io_context, boost::bind(response_handler, command,
           MessageFactory::make_error_response(proto::ResponseError::SILENCED)));
     return true;
   }
@@ -287,7 +287,7 @@ void MRC1Connection::handle_write_command(const boost::system::error_code &ec, s
         : proto::ResponseError::COM_ERROR);
     response->mutable_mrc_status()->set_info(ec.message());
 
-    m_io_context.post(boost::bind(m_current_response_handler, m_current_command, response));
+    asio::post(m_io_context, boost::bind(m_current_response_handler, m_current_command, response));
     m_current_command.reset();
     m_current_response_handler = 0;
     stop(ec);
@@ -350,7 +350,7 @@ void MRC1Connection::handle_command_response_read(const boost::system::error_cod
           << proto::Message::Type_Name(m_reply_parser.get_response_message()->type());
 
         /* Parsing complete. Call the response handler. */
-        m_io_context.post(boost::bind(m_current_response_handler, m_current_command,
+        asio::post(m_io_context, boost::bind(m_current_response_handler, m_current_command,
               m_reply_parser.get_response_message()));
 
         m_current_command.reset();
@@ -365,7 +365,7 @@ void MRC1Connection::handle_command_response_read(const boost::system::error_cod
         ec == errc::operation_canceled ? proto::ResponseError::COM_TIMEOUT : proto::ResponseError::COM_ERROR);
     response->mutable_mrc_status()->set_info(ec.message());
 
-    m_io_context.post(boost::bind(m_current_response_handler, m_current_command, response));
+    asio::post(m_io_context, boost::bind(m_current_response_handler, m_current_command, response));
     m_current_command.reset();
     m_current_response_handler = 0;
     stop(ec);
@@ -557,9 +557,8 @@ void MRC1TCPConnection::start_impl(ErrorCodeCallback completion_handler)
     BOOST_LOG_SEV(m_log, log::lvl::info) << "Connecting to "
       << m_host << ":" << m_service;
 
-    tcp::resolver::query query(m_host, m_service);
-    tcp::resolver::iterator endpoint_iter(m_resolver.resolve(query));
-    asio::connect(m_socket, endpoint_iter);
+    auto endpoints = m_resolver.resolve(m_host, m_service);
+    asio::connect(m_socket, endpoints);
     m_socket.set_option(asio::ip::tcp::no_delay(true));
 
     completion_handler(boost::system::error_code(), {});

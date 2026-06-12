@@ -14,7 +14,7 @@ namespace mesycontrol
 class TCPServer: private boost::noncopyable
 {
   public:
-    explicit TCPServer(boost::asio::io_service &io_service,
+    explicit TCPServer(boost::asio::io_context &io_service,
         boost::asio::ip::tcp::endpoint endpoint,
         TCPConnectionManager &connection_manager);
     ~TCPServer();
@@ -26,7 +26,7 @@ class TCPServer: private boost::noncopyable
     void handle_accept(const boost::system::error_code &ec);
 
 
-    boost::asio::io_service &m_io_service;
+    boost::asio::io_context &m_io_service;
     boost::asio::ip::tcp::acceptor m_acceptor;
     TCPConnectionManager &m_connection_manager;
     TCPConnectionPtr m_new_connection;
