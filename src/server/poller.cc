@@ -42,7 +42,7 @@ std::ostream &operator<<(std::ostream &os, const PollResult &result)
 }
 
 Poller::Poller(MRC1RequestQueue &mrc1_queue,
-    boost::posix_time::time_duration min_interval)
+    std::chrono::milliseconds min_interval)
   : m_log(log::keywords::channel="Poller")
   , m_queue(mrc1_queue)
   , m_set_iter(m_set.end())
@@ -75,7 +75,7 @@ void Poller::start()
 
   BOOST_LOG_SEV(m_log, log::lvl::info) << "polling started";
   m_stopped = false;
-  m_timer.expires_from_now(boost::posix_time::milliseconds(0));
+  m_timer.expires_after(std::chrono::milliseconds(0));
   m_timer.async_wait(boost::bind(&Poller::handle_timeout, this, _1));
 }
 
@@ -159,7 +159,7 @@ void Poller::poll_next()
         boost::bind(&Poller::handle_response, this, _1, _2)
         );
   } else {
-    m_timer.expires_from_now(m_min_interval);
+    m_timer.expires_after(m_min_interval);
     m_timer.async_wait(boost::bind(&Poller::handle_timeout, this, _1));
   }
 }
@@ -211,7 +211,7 @@ void Poller::notify_cycle_complete()
 void Poller::handle_timeout(const boost::system::error_code &ec)
 {
   if (ec != boost::asio::error::operation_aborted &&
-      m_timer.expires_at() <= boost::asio::deadline_timer::traits_type::now()) {
+      m_timer.expiry() <= std::chrono::steady_clock::now()) {
 
     if (m_set_iter != m_set.end()) {
       poll_next();
@@ -222,7 +222,7 @@ void Poller::handle_timeout(const boost::system::error_code &ec)
 }
 
 ScanbusPoller::ScanbusPoller(MRC1RequestQueue &mrc1_queue,
-    boost::posix_time::time_duration min_interval)
+    std::chrono::milliseconds min_interval)
   : m_log(log::keywords::channel="ScanbusPoller")
   , m_queue(mrc1_queue)
   , m_timer(mrc1_queue.get_mrc1_connection()->get_io_context())
@@ -238,7 +238,7 @@ void ScanbusPoller::start()
 
   BOOST_LOG_SEV(m_log, log::lvl::info) << "scanbus polling started";
   m_stopped = false;
-  m_timer.expires_from_now(boost::posix_time::milliseconds(0));
+  m_timer.expires_after(std::chrono::milliseconds(0));
   m_timer.async_wait(boost::bind(&ScanbusPoller::handle_timeout, this, _1));
 }
 
@@ -280,14 +280,14 @@ void ScanbusPoller::handle_response(const MessagePtr &request, const MessagePtr 
     }
   }
 
-  m_timer.expires_from_now(m_min_interval);
+  m_timer.expires_after(m_min_interval);
   m_timer.async_wait(boost::bind(&ScanbusPoller::handle_timeout, this, _1));
 }
 
 void ScanbusPoller::handle_timeout(const boost::system::error_code &ec)
 {
   if (ec != boost::asio::error::operation_aborted &&
-      m_timer.expires_at() <= boost::asio::deadline_timer::traits_type::now()) {
+      m_timer.expiry() <= std::chrono::steady_clock::now()) {
 
     BOOST_LOG_SEV(m_log, log::lvl::debug) << "queueing scanbus requests";
 

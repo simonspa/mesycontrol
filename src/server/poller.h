@@ -1,11 +1,12 @@
 #ifndef UUID_4dece6c3_f25f_43a6_aea1_0d9058e43cce
 #define UUID_4dece6c3_f25f_43a6_aea1_0d9058e43cce
 
+#include <boost/asio/steady_timer.hpp>
 #include <boost/cstdint.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/unordered_set.hpp>
+#include <chrono>
 #include <map>
 #include <ostream>
 #include <vector>
@@ -70,7 +71,7 @@ class Poller
     typedef boost::function<void (const ResultType &)> ResultHandler;
 
     explicit Poller(MRC1RequestQueue &mrc1_queue,
-        boost::posix_time::time_duration min_interval = boost::posix_time::milliseconds(5));
+      std::chrono::milliseconds min_interval = std::chrono::milliseconds(5));
 
     void set_poll_items(const TCPConnectionPtr &connection, const PollItems &items);
     void remove_poller(const TCPConnectionPtr &connection);
@@ -111,8 +112,8 @@ class Poller
     PollItemsMap m_map;
     PollSet m_set;
     PollSet::const_iterator m_set_iter;
-    boost::asio::deadline_timer m_timer;
-    boost::posix_time::time_duration m_min_interval;
+    asio::steady_timer m_timer;
+    std::chrono::milliseconds m_min_interval;
     ResultType m_result;
     std::vector<ResultHandler> m_result_handlers;
     bool m_stopped;
@@ -126,7 +127,7 @@ class ScanbusPoller
     typedef boost::function<void (const MessagePtr &)> ResultHandler;
 
     explicit ScanbusPoller(MRC1RequestQueue &mrc1_queue,
-        boost::posix_time::time_duration min_interval = boost::posix_time::milliseconds(2000));
+        std::chrono::milliseconds min_interval = std::chrono::milliseconds(2000));
 
     void register_result_handler(const ResultHandler &handler)
     { m_result_handlers.push_back(handler); }
@@ -140,8 +141,8 @@ class ScanbusPoller
 
     log::Logger m_log;
     MRC1RequestQueue& m_queue;
-    boost::asio::deadline_timer m_timer;
-    boost::posix_time::time_duration m_min_interval;
+    asio::steady_timer m_timer;
+    std::chrono::milliseconds m_min_interval;
     std::vector<ResultHandler> m_result_handlers;
     bool m_stopped;
 };

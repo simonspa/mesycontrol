@@ -34,7 +34,7 @@ void MRCComm::read_until_prompt(ReadHandler handler)
   m_str_buf.clear();
   m_read_handler = handler;
 
-  m_timer.expires_from_now(default_read_until_prompt_timeout);
+  m_timer.expires_after(default_read_until_prompt_timeout);
 
   m_timer.async_wait(boost::bind(&MRCComm::handle_read_until_prompt_timeout,
         shared_from_this(), _1));
@@ -67,7 +67,7 @@ void MRCComm::finish_read_until_prompt(const boost::system::error_code &ec, std:
 void MRCComm::handle_read_until_prompt_timeout(boost::system::error_code ec)
 {
   if (ec != asio::error::operation_aborted &&
-      m_timer.expires_at() <= asio::deadline_timer::traits_type::now()) {
+      m_timer.expiry() <= std::chrono::steady_clock::now()) {
     cancel_io();
     m_busy = false;
   }
@@ -76,7 +76,7 @@ void MRCComm::handle_read_until_prompt_timeout(boost::system::error_code ec)
 void MRCComm::handle_timeout(boost::system::error_code ec)
 {
   if (ec != asio::error::operation_aborted &&
-      m_timer.expires_at() <= asio::deadline_timer::traits_type::now()) {
+      m_timer.expiry() <= std::chrono::steady_clock::now()) {
 
     //BOOST_LOG_SEV(m_log, log::lvl::warning)
     //  << "MRCComm::handle_timeout: canceling IO operation due to timeout";
@@ -91,7 +91,7 @@ void MRCComm::start_write(const std::string::const_iterator &it)
   if (it == m_str_buf.end()) {
     finish_write(it, boost::system::error_code());
   } else {
-    m_timer.expires_from_now(m_write_timeout);
+    m_timer.expires_after(m_write_timeout);
     m_timer.async_wait(boost::bind(&MRCComm::handle_timeout, shared_from_this(), _1));
     start_write_one(it, boost::bind(&MRCComm::handle_write, shared_from_this(), it, _1, _2));
   }
@@ -118,7 +118,7 @@ void MRCComm::finish_write(std::string::const_iterator it, boost::system::error_
 
 void MRCComm::start_read()
 {
-  m_timer.expires_from_now(m_read_timeout);
+  m_timer.expires_after(m_read_timeout);
   m_timer.async_wait(boost::bind(&MRCComm::handle_timeout, shared_from_this(), _1));
   start_read_one(m_char_buf, boost::bind(&MRCComm::handle_read, shared_from_this(), _1, _2));
 }

@@ -4,7 +4,8 @@
 #include "config.h"
 #include <boost/asio.hpp>
 #include <boost/asio/deadline_timer.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <chrono>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
@@ -24,10 +25,10 @@ class MRC1Connection:
 {
   public:
     /** Default timeout for read/write operations. */
-    static const boost::posix_time::time_duration default_io_timeout;
+    static const std::chrono::milliseconds default_io_timeout;
 
     /** Default timeout between reconnect attempts. */
-    static const boost::posix_time::time_duration default_reconnect_timeout;
+    static const std::chrono::milliseconds default_reconnect_timeout;
 
     typedef boost::function<void (
         const proto::MRCStatus::StatusCode &,
@@ -54,11 +55,11 @@ class MRC1Connection:
 
     bool command_in_progress() const { return m_current_command != nullptr; }
 
-    boost::posix_time::time_duration get_io_timeout() const { return m_io_timeout; }
-    void set_io_timeout(const boost::posix_time::time_duration &timeout) { m_io_timeout = timeout; }
+    std::chrono::milliseconds get_io_timeout() const { return m_io_timeout; }
+    void set_io_timeout(const std::chrono::milliseconds &timeout) { m_io_timeout = timeout; }
 
-    boost::posix_time::time_duration get_reconnect_timeout() const { return m_reconnect_timeout; }
-    void set_reconnect_timeout(const boost::posix_time::time_duration &timeout) { m_reconnect_timeout = timeout; }
+    std::chrono::milliseconds get_reconnect_timeout() const { return m_reconnect_timeout; }
+    void set_reconnect_timeout(const std::chrono::milliseconds &timeout) { m_reconnect_timeout = timeout; }
 
     bool get_auto_reconnect() const { return m_auto_reconnect; }
     void set_auto_reconnect(bool auto_reconnect) { m_auto_reconnect = auto_reconnect; }
@@ -134,9 +135,9 @@ class MRC1Connection:
     friend class MRC1Initializer;
 
     boost::asio::io_context &m_io_context;
-    boost::asio::deadline_timer m_timeout_timer;
-    boost::posix_time::time_duration m_io_timeout;
-    boost::posix_time::time_duration m_reconnect_timeout;
+    boost::asio::steady_timer m_timeout_timer;
+    std::chrono::milliseconds m_io_timeout;
+    std::chrono::milliseconds m_reconnect_timeout;
     MessagePtr m_current_command;
     ResponseHandler m_current_response_handler;
     std::string m_write_buffer;

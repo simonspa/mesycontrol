@@ -8,6 +8,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/ref.hpp>
@@ -138,11 +139,8 @@ class MRC1Initializer:
     log::Logger m_log;
 };
 
-const boost::posix_time::time_duration
-MRC1Connection::default_io_timeout(boost::posix_time::milliseconds(100));
-
-const boost::posix_time::time_duration
-MRC1Connection::default_reconnect_timeout(boost::posix_time::milliseconds(2500));
+const std::chrono::milliseconds MRC1Connection::default_io_timeout(100);
+const std::chrono::milliseconds MRC1Connection::default_reconnect_timeout(2500);
 
 const std::string MRC1Connection::response_line_terminator = "\n\r";
 const char MRC1Connection::command_terminator = '\r';
@@ -215,7 +213,7 @@ void MRC1Connection::reconnect_if_enabled()
 {
   if (get_auto_reconnect()) {
       BOOST_LOG_SEV(m_log, log::lvl::info) << "Reconnecting...";
-      m_timeout_timer.expires_from_now(get_reconnect_timeout());
+      m_timeout_timer.expires_after(get_reconnect_timeout());
       m_timeout_timer.async_wait(boost::bind(&MRC1Connection::handle_reconnect_timeout, shared_from_this(), _1));
   }
 }
@@ -395,7 +393,7 @@ void MRC1Connection::handle_io_timeout(const boost::system::error_code &ec)
   /* Make sure the deadline has passed. Another asynchronous operation may have
    * moved the deadline before this actor had a chance to run. */
   if (ec != boost::asio::error::operation_aborted &&
-      m_timeout_timer.expires_at() <= boost::asio::deadline_timer::traits_type::now()) {
+      m_timeout_timer.expiry() <= std::chrono::steady_clock::now()) {
     cancel_io();
   }
 }
@@ -403,7 +401,7 @@ void MRC1Connection::handle_io_timeout(const boost::system::error_code &ec)
 void MRC1Connection::handle_reconnect_timeout(const boost::system::error_code &ec)
 {
   if (ec != boost::asio::error::operation_aborted &&
-      m_timeout_timer.expires_at() <= boost::asio::deadline_timer::traits_type::now()) {
+      m_timeout_timer.expiry() <= std::chrono::steady_clock::now()) {
     start();
   }
 }

@@ -2,6 +2,7 @@
 #define UUID_9fca8a51_4f4a_4dc7_904d_a9286b06b62d
 
 #include <boost/asio/steady_timer.hpp>
+#include <deque>
 #include "mrc1_connection.h"
 #include "logging.h"
 

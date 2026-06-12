@@ -2,9 +2,9 @@
 #define UUID_520d7afb_0f07_4e30_b766_561a3671ca6f
 
 #include <boost/asio.hpp>
-#include <boost/asio/deadline_timer.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/bind.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <chrono>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
@@ -16,18 +16,17 @@ namespace mesycontrol
 {
 
 namespace asio = boost::asio;
-namespace pt   = boost::posix_time;
 
 static const std::string prompt_pattern = "^mrc-1>";
 static const boost::regex prompt_regex("^mrc-1>");
 
-static const pt::time_duration default_read_timeout  = pt::milliseconds(100);
-static const pt::time_duration default_write_timeout = pt::milliseconds(100);
+static const std::chrono::milliseconds default_read_timeout = std::chrono::milliseconds(100);
+static const std::chrono::milliseconds default_write_timeout = std::chrono::milliseconds(100);
 
-static const pt::time_duration default_serial_read_timeout  = pt::milliseconds(50);
-static const pt::time_duration default_serial_write_timeout = pt::milliseconds(100);
+static const std::chrono::milliseconds default_serial_read_timeout  = std::chrono::milliseconds(50);
+static const std::chrono::milliseconds default_serial_write_timeout = std::chrono::milliseconds(100);
 
-static const pt::time_duration default_read_until_prompt_timeout = pt::milliseconds(500);
+static const std::chrono::milliseconds default_read_until_prompt_timeout = std::chrono::milliseconds(500);
 
 class MRCComm:
   public boost::enable_shared_from_this<MRCComm>,
@@ -47,8 +46,8 @@ class MRCComm:
     typedef boost::function<void (boost::system::error_code, std::size_t)> AsioReadHandler;
 
     MRCComm(asio::io_context &io,
-        const pt::time_duration &read_timeout  = default_read_timeout,
-        const pt::time_duration &write_timeout = default_write_timeout)
+        const std::chrono::milliseconds &read_timeout  = default_read_timeout,
+        const std::chrono::milliseconds &write_timeout = default_write_timeout)
       : m_io(io)
       , m_read_timeout(read_timeout)
       , m_write_timeout(write_timeout)
@@ -84,10 +83,10 @@ class MRCComm:
 
 
     asio::io_context &m_io;
-    pt::time_duration m_read_timeout;
-    pt::time_duration m_write_timeout;
+    std::chrono::milliseconds m_read_timeout;
+    std::chrono::milliseconds m_write_timeout;
     bool m_busy;
-    asio::deadline_timer m_timer;
+    asio::steady_timer m_timer;
     std::string m_str_buf;
     char m_char_buf;
     asio::streambuf m_asio_buf;
