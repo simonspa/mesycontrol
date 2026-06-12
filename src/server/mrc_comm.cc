@@ -57,7 +57,7 @@ void MRCComm::finish_read_until_prompt(const boost::system::error_code &ec, std:
     data = std::string(asio::buffers_begin(buffers), asio::buffers_end(buffers));
   }
 
-  m_io.post(boost::bind(m_read_handler, ec, data));
+  asio::post(m_io, boost::bind(m_read_handler, ec, data));
 
   m_asio_buf.consume(m_asio_buf.size());
   m_busy = false;
@@ -110,7 +110,7 @@ void MRCComm::handle_write(std::string::const_iterator it, boost::system::error_
 void MRCComm::finish_write(std::string::const_iterator it, boost::system::error_code ec)
 {
   m_timer.cancel();
-  m_io.post(boost::bind(m_write_handler, ec, it - m_str_buf.begin()));
+  asio::post(m_io, boost::bind(m_write_handler, ec, it - m_str_buf.begin()));
   m_busy = false;
   m_write_handler = 0;
   m_str_buf.clear();
@@ -140,7 +140,7 @@ void MRCComm::finish_read(const boost::system::error_code &ec)
     << "MRCComm::finish_read: ec=" << ec.message();
 
   m_timer.cancel();
-  m_io.post(boost::bind(m_read_handler,
+  asio::post(m_io, boost::bind(m_read_handler,
         ec == boost::system::errc::operation_canceled ? boost::system::error_code() : ec,
         m_str_buf));
   m_busy = false;

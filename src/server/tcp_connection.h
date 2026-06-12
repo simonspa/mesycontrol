@@ -20,7 +20,7 @@ class TCPConnection
   , private boost::noncopyable
 {
   public:
-    explicit TCPConnection(boost::asio::io_service &io_service, TCPConnectionManager &manager);
+    explicit TCPConnection(boost::asio::io_context &io_service, TCPConnectionManager &manager);
     ~TCPConnection();
 
     void start();
