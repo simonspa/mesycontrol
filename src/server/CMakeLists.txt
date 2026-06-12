@@ -43,7 +43,7 @@ target_link_libraries(mesycontrol
     )
 
 target_compile_definitions(mesycontrol PRIVATE -DBOOST_BIND_GLOBAL_PLACEHOLDERS)
-target_compile_features(mesycontrol PRIVATE cxx_std_14)
+target_compile_features(mesycontrol PRIVATE cxx_std_17)
 
 add_executable(mesycontrol_server
     main.cc
@@ -54,7 +54,7 @@ target_link_libraries(mesycontrol_server
     )
 
 target_compile_definitions(mesycontrol_server PRIVATE -DBOOST_BIND_GLOBAL_PLACEHOLDERS)
-target_compile_features(mesycontrol_server PRIVATE cxx_std_14)
+target_compile_features(mesycontrol_server PRIVATE cxx_std_17)
 target_include_directories(mesycontrol_server PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 option(BOOST_ASIO_ENABLE_HANDLER_TRACKING "enable boost::asio handler tracking" OFF)
